@@ -1,0 +1,14 @@
+[Unit]
+Description=DeskDrawer expiry daemon
+Documentation=https://github.com/alex/DeskDrawer
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m deskdrawer
+WorkingDirectory=%h/.local/share/deskdrawer-daemon
+Environment=PYTHONPATH=%h/.local/share/deskdrawer-daemon
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
