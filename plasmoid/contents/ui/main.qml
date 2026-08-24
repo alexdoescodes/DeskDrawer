@@ -17,12 +17,12 @@ PlasmoidItem {
     readonly property real lifetimeSeconds: Plasmoid.configuration.lifetimeHours * 3600
 
     Backend {
-        id: backend
+        id: cliBackend
         cli: root.paths.cli
     }
 
     DrawerModel {
-        id: drawer
+        id: drawerModel
         statePath: root.paths.statePath
         lifetimeSeconds: root.lifetimeSeconds
     }
@@ -41,8 +41,8 @@ PlasmoidItem {
         DrawerView {
             id: view
             anchors.fill: parent
-            drawer: drawer
-            backend: backend
+            drawer: drawerModel
+            backend: cliBackend
             iconSize: Plasmoid.configuration.iconSize
             lifetimeHours: Plasmoid.configuration.lifetimeHours
         }

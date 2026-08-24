@@ -2198,6 +2198,7 @@ Create `plasmoid/contents/ui/DrawerModel.qml`:
 
 ```qml
 import QtQuick
+import org.kde.plasma.plasma5support as P5Support
 
 Item {
     id: drawerModel
@@ -2211,17 +2212,27 @@ Item {
 
     ListModel { id: items }
 
+    // Qt disables XMLHttpRequest GET on local files unless QML_XHR_ALLOW_FILE_READ=1
+    // is set in the environment, which cannot be relied on inside plasmashell.
+    // The state file is read through the executable engine instead, matching the
+    // rest of the design where all filesystem access happens outside QML.
     function reload() {
-        const request = new XMLHttpRequest();
-        request.onreadystatechange = function () {
-            if (request.readyState !== XMLHttpRequest.DONE) {
-                return;
-            }
+        if (!statePath) {
+            return;
+        }
+        reader.connectSource("cat -- '" + statePath.replace(/'/g, "'\\''") + "'");
+    }
+
+    P5Support.DataSource {
+        id: reader
+        engine: "executable"
+        connectedSources: []
+
+        onNewData: function (source, data) {
+            disconnectSource(source);
             drawerModel.now = Date.now() / 1000;
-            drawerModel._apply(request.responseText);
-        };
-        request.open("GET", "file://" + statePath);
-        request.send();
+            drawerModel._apply(data["stdout"] || "");
+        }
     }
 
     function _apply(text) {
@@ -2291,12 +2302,12 @@ PlasmoidItem {
     readonly property real lifetimeSeconds: Plasmoid.configuration.lifetimeHours * 3600
 
     Backend {
-        id: backend
+        id: cliBackend
         cli: root.paths.cli
     }
 
     DrawerModel {
-        id: drawer
+        id: drawerModel
         statePath: root.paths.statePath
         lifetimeSeconds: root.lifetimeSeconds
     }
@@ -2308,7 +2319,7 @@ PlasmoidItem {
         Text {
             anchors.centerIn: parent
             color: "white"
-            text: drawer.model.count + " item(s)"
+            text: drawerModel.model.count + " item(s)"
         }
     }
 }
@@ -2568,8 +2579,8 @@ In `plasmoid/contents/ui/main.qml`, replace the `Text` inside `fullRepresentatio
 
         DrawerView {
             anchors.fill: parent
-            drawer: drawer
-            backend: backend
+            drawer: drawerModel
+            backend: cliBackend
             iconSize: Plasmoid.configuration.iconSize
             lifetimeHours: Plasmoid.configuration.lifetimeHours
         }
@@ -2725,8 +2736,8 @@ and in `main.qml`, brighten the dashes while a file hovers over the drawer:
         DrawerView {
             id: view
             anchors.fill: parent
-            drawer: drawer
-            backend: backend
+            drawer: drawerModel
+            backend: cliBackend
             iconSize: Plasmoid.configuration.iconSize
             lifetimeHours: Plasmoid.configuration.lifetimeHours
         }

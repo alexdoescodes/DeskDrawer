@@ -10,13 +10,18 @@ Item {
     property real borderWidth: 2
     property real padding: 12
 
-    property color fillColor: Kirigami.Theme.backgroundColor
+    property real backgroundOpacity: 0.35
+    property color fillColor: Qt.rgba(Kirigami.Theme.backgroundColor.r,
+                                      Kirigami.Theme.backgroundColor.g,
+                                      Kirigami.Theme.backgroundColor.b,
+                                      frame.backgroundOpacity)
     property color strokeColor: Qt.rgba(Kirigami.Theme.textColor.r,
                                         Kirigami.Theme.textColor.g,
                                         Kirigami.Theme.textColor.b, 0.45)
 
     default property alias content: interior.data
 
+    onBackgroundOpacityChanged: canvas.requestPaint()
     onFillColorChanged: canvas.requestPaint()
     onStrokeColorChanged: canvas.requestPaint()
 

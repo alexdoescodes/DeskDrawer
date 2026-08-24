@@ -1,0 +1,4 @@
+{
+  "report.pdf": {"name":"report.pdf","origin":"/tmp/report.pdf","dropped":1000,"last_activity":1000,"is_dir":false,"exists":true,"icon":"application-pdf"},
+  "project":    {"name":"project","origin":"/tmp/project","dropped":1000,"last_activity":1000,"is_dir":true,"exists":true,"icon":"folder"}
+}

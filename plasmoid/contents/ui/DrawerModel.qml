@@ -1,4 +1,5 @@
 import QtQuick
+import org.kde.plasma.plasma5support as P5Support
 
 Item {
     id: drawerModel
@@ -12,17 +13,27 @@ Item {
 
     ListModel { id: items }
 
+    // Qt disables XMLHttpRequest GET on local files unless QML_XHR_ALLOW_FILE_READ=1
+    // is set in the environment, which we cannot rely on inside plasmashell. The
+    // state file is read through the executable engine instead, matching the rest
+    // of the design where all filesystem access happens outside QML.
     function reload() {
-        const request = new XMLHttpRequest();
-        request.onreadystatechange = function () {
-            if (request.readyState !== XMLHttpRequest.DONE) {
-                return;
-            }
+        if (!statePath) {
+            return;
+        }
+        reader.connectSource("cat -- '" + statePath.replace(/'/g, "'\\''") + "'");
+    }
+
+    P5Support.DataSource {
+        id: reader
+        engine: "executable"
+        connectedSources: []
+
+        onNewData: function (source, data) {
+            disconnectSource(source);
             drawerModel.now = Date.now() / 1000;
-            drawerModel._apply(request.responseText);
-        };
-        request.open("GET", "file://" + statePath);
-        request.send();
+            drawerModel._apply(data["stdout"] || "");
+        }
     }
 
     function _apply(text) {
