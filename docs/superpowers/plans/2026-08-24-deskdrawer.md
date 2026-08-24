@@ -2456,11 +2456,12 @@ Item {
             "text/plain": tile.itemName
         })
 
-        onDragActiveChanged: tile.draggingChanged(Drag.active)
-
         DragHandler {
             id: dragHandler
             target: null
+            // Drag.active is an attached property and has no declarable
+            // change handler; the handler's own active property does.
+            onActiveChanged: tile.draggingChanged(active)
         }
     }
 
