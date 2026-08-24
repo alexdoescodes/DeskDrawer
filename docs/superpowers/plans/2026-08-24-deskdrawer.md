@@ -1485,21 +1485,28 @@ def path_from_argument(arg: str) -> Path:
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="deskdrawer")
-    parser.add_argument("--config-path", default=None)
+    # --config-path must work both before and after the subcommand. It is
+    # declared on a shared parent with default=SUPPRESS, not None: a
+    # subparser's default overwrites whatever the top-level parser already
+    # stored, so a plain None default would silently discard
+    # `--config-path X add ...` and fall back to the real drawer.
+    config_path_parent = argparse.ArgumentParser(add_help=False)
+    config_path_parent.add_argument("--config-path", default=argparse.SUPPRESS)
+
+    parser = argparse.ArgumentParser(prog="deskdrawer", parents=[config_path_parent])
     sub = parser.add_subparsers(dest="command")
 
-    add = sub.add_parser("add")
+    add = sub.add_parser("add", parents=[config_path_parent])
     add.add_argument("paths", nargs="+")
 
-    remove = sub.add_parser("remove")
+    remove = sub.add_parser("remove", parents=[config_path_parent])
     remove.add_argument("names", nargs="+")
 
-    sub.add_parser("list")
+    sub.add_parser("list", parents=[config_path_parent])
 
-    cfg = sub.add_parser("config")
+    cfg = sub.add_parser("config", parents=[config_path_parent])
     cfg_sub = cfg.add_subparsers(dest="config_command")
-    cfg_set = cfg_sub.add_parser("set")
+    cfg_set = cfg_sub.add_parser("set", parents=[config_path_parent])
     cfg_set.add_argument("key")
     cfg_set.add_argument("value")
 
@@ -1508,7 +1515,8 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None, cfg: Config | None = None) -> int:
     args = _build_parser().parse_args(argv if argv is not None else sys.argv[1:])
-    config_path = Path(args.config_path) if args.config_path else None
+    raw_config_path = getattr(args, "config_path", None)
+    config_path = Path(raw_config_path) if raw_config_path else None
 
     if args.command is None:
         print("usage: deskdrawer {add,remove,list,config} ...", file=sys.stderr)
@@ -1562,7 +1570,7 @@ if __name__ == "__main__":
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `cd daemon && python3 -m unittest test.test_cli -v`
-Expected: PASS, 15 tests
+Expected: PASS, 17 tests
 
 - [ ] **Step 5: Commit**
 

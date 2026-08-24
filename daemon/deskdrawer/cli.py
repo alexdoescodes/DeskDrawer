@@ -20,8 +20,11 @@ def _build_parser() -> argparse.ArgumentParser:
     # A shared parent so --config-path is accepted both before and after the
     # subcommand (argparse subparsers otherwise swallow the remaining argv
     # and only recognize options declared on the matching subparser).
+    # SUPPRESS, not None: a subparser's default overwrites whatever the
+    # top-level parser already stored, so `--config-path X add ...` would
+    # silently fall back to the default drawer.
     config_path_parent = argparse.ArgumentParser(add_help=False)
-    config_path_parent.add_argument("--config-path", default=None)
+    config_path_parent.add_argument("--config-path", default=argparse.SUPPRESS)
 
     parser = argparse.ArgumentParser(prog="deskdrawer", parents=[config_path_parent])
     sub = parser.add_subparsers(dest="command")
@@ -45,7 +48,8 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None, cfg: Config | None = None) -> int:
     args = _build_parser().parse_args(argv if argv is not None else sys.argv[1:])
-    config_path = Path(args.config_path) if args.config_path else None
+    raw_config_path = getattr(args, "config_path", None)
+    config_path = Path(raw_config_path) if raw_config_path else None
 
     if args.command is None:
         print("usage: deskdrawer {add,remove,list,config} ...", file=sys.stderr)

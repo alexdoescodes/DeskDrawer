@@ -59,6 +59,15 @@ class CliTest(unittest.TestCase):
         self.assertEqual(cli.main(["add", str(origin)], cfg=self.cfg), 0)
         self.assertIn("a file 'with' quotes.txt", self.store.load())
 
+    def test_add_honours_config_path_before_the_subcommand(self):
+        """A --config-path given before the subcommand must not be discarded."""
+        rc = self.root / "rc"
+        drawer = self.root / "elsewhere"
+        rc.write_text(f"[deskdrawer]\ndrawer_dir = {drawer}\n")
+        origin = self.make_file()
+        self.assertEqual(cli.main(["--config-path", str(rc), "add", str(origin)]), 0)
+        self.assertTrue((drawer / "items" / "a.txt").is_symlink())
+
     def test_add_missing_path_fails(self):
         self.assertEqual(cli.main(["add", str(self.root / "nope.txt")], cfg=self.cfg), 1)
 
@@ -99,6 +108,11 @@ class ConfigCommandTest(unittest.TestCase):
 
     def test_config_set_writes_the_value(self):
         code = cli.main(["config", "set", "lifetime_hours", "6", "--config-path", str(self.path)])
+        self.assertEqual(code, 0)
+        self.assertIn("lifetime_hours = 6", self.path.read_text())
+
+    def test_config_set_accepts_the_flag_before_the_subcommand(self):
+        code = cli.main(["--config-path", str(self.path), "config", "set", "lifetime_hours", "6"])
         self.assertEqual(code, 0)
         self.assertIn("lifetime_hours = 6", self.path.read_text())
 
