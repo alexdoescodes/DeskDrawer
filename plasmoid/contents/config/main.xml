@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0">
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="lifetimeHours" type="Int">
+      <default>24</default>
+    </entry>
+    <entry name="iconSize" type="Int">
+      <default>48</default>
+    </entry>
+  </group>
+</kcfg>

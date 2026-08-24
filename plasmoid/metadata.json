@@ -1,0 +1,14 @@
+{
+  "KPlugin": {
+    "Id": "org.kde.plasma.deskdrawer",
+    "Name": "DeskDrawer",
+    "Description": "A drop zone whose contents disappear after you stop using them",
+    "Icon": "folder",
+    "Category": "Utilities",
+    "License": "MIT",
+    "Version": "1.0.0",
+    "Authors": [{ "Name": "Alex" }]
+  },
+  "KPackageStructure": "Plasma/Applet",
+  "X-Plasma-API-Minimum-Version": "6.0"
+}
