@@ -41,12 +41,18 @@ No pip packages and no system packages are required. inotify is called through
 
 | Action | Result |
 |---|---|
-| Drop a file or folder | Creates a link |
-| Left click | Opens it |
-| Middle click | Reveals it in Dolphin |
+| Drop a file or folder | Creates a link where you dropped it |
+| Double left click | Opens it |
+| Ctrl + left click | Reveals it in Dolphin |
+| Middle click | Removes the link now |
+| Drag inside the drawer | Moves the icon; positions are free, not on a grid |
 | Drag out | Gives the receiving application the original file |
 | Drag onto the trash corner | Removes the link now |
 | Right click | Open, Reveal in Dolphin, Remove now |
+
+A single left click only selects, leaving press-and-drag as the natural
+gesture. Icon positions are stored in the widget's own configuration, not in
+the drawer state, and are pulled back inside the frame when the widget shrinks.
 
 ## Configuration
 
@@ -72,7 +78,33 @@ metadata, and is rebuilt from the directory if it is lost or corrupted.
     journalctl --user -u deskdrawer -n 50
     deskdrawer list
 
+## Reloading after a change
+
+`kpackagetool6 --upgrade` writes the new files but a running plasmashell keeps
+the QML it loaded at startup, so the widget goes on behaving exactly as before
+and the change looks like it failed:
+
+    kquitapp6 plasmashell && kstart plasmashell
+
+Stale compiled QML can also survive in `~/.cache/plasmashell/qmlcache`; delete
+it if a change still refuses to appear.
+
 ## Tests
 
     cd daemon && python3 -m unittest discover -s test -v
-    qmltestrunner -input plasmoid/contents/tests
+    QT_FORCE_STDERR_LOGGING=1 /usr/lib/qt6/bin/qmltestrunner -input plasmoid/contents/tests
+
+`qmltestrunner` on `$PATH` is the Qt 5 build and rejects the unversioned
+imports these tests use; the Qt 6 binary lives under `/usr/lib/qt6/bin`.
+`QT_FORCE_STDERR_LOGGING=1` is what makes QML warnings visible at all -
+without it Qt sends them to the journal and every run looks clean.
+
+Mouse gestures that depend on event timing - the double click that opens an
+item - cannot be tested there: qmltestrunner's synthetic events carry
+timestamps that never advance, so a double click arrives as two unrelated
+single clicks and `mouseDoubleClickSequence()` fakes the result. Drive real
+input instead, with the widget running under XWayland:
+
+    QT_QPA_PLATFORM=xcb plasmoidviewer -a org.kde.plasma.deskdrawer &
+    python3 plasmoid/contents/tests/manual-input.py double <x> <y>
+    python3 plasmoid/contents/tests/manual-input.py single <x> <y> Control_L
