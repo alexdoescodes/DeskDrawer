@@ -42,8 +42,8 @@ message format.
 
     ~/.local/share/deskdrawer/
     |-- items/
-    |   |-- report.pdf   -> /home/alex/Downloads/report.pdf
-    |   `-- project      -> /home/alex/Documents/project
+    |   |-- report.pdf   -> /home/user/Downloads/report.pdf
+    |   `-- project      -> /home/user/Documents/project
     `-- state.json
 
 The plasmoid owns the UI and two trivial operations (create link, remove link),
