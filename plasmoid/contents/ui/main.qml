@@ -45,6 +45,11 @@ PlasmoidItem {
             backend: cliBackend
             iconSize: Plasmoid.configuration.iconSize
             lifetimeHours: Plasmoid.configuration.lifetimeHours
+
+            savedPositions: Plasmoid.configuration.itemPositions
+            onPositionsPersistRequested: function (json) {
+                Plasmoid.configuration.itemPositions = json;
+            }
         }
     }
 }

@@ -8,5 +8,10 @@
     <entry name="iconSize" type="Int">
       <default>48</default>
     </entry>
+    <!-- Where each entry sits on the canvas, as {"name":{"x":..,"y":..}}.
+         A view concern, so it lives here rather than in the daemon's state. -->
+    <entry name="itemPositions" type="String">
+      <default>{}</default>
+    </entry>
   </group>
 </kcfg>

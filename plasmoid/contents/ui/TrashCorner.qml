@@ -6,6 +6,10 @@ Item {
     id: trash
 
     property bool active: false
+    // Set by the view while a tile is dragged over us. An internal drag moves
+    // the tile itself rather than starting a native drag, so the DropArea below
+    // never sees it and cannot light the corner up on its own.
+    property bool hovered: false
     signal dropped(string name)
 
     implicitWidth: Kirigami.Units.iconSizes.medium + Kirigami.Units.largeSpacing
@@ -18,7 +22,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: width / 2
-        color: dropArea.containsDrag
+        color: dropArea.containsDrag || trash.hovered
                ? Kirigami.Theme.negativeTextColor
                : Qt.rgba(Kirigami.Theme.textColor.r,
                          Kirigami.Theme.textColor.g,
