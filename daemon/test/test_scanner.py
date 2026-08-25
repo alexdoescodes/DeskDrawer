@@ -34,24 +34,24 @@ class ScanOpenPathsTest(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_collects_fd_targets(self):
-        self.proc.process(101, fds=["/home/alex/a.txt", "/home/alex/b.txt"])
+        self.proc.process(101, fds=["/home/user/a.txt", "/home/user/b.txt"])
         found = scanner.scan_open_paths(self.proc.root)
-        self.assertIn("/home/alex/a.txt", found)
-        self.assertIn("/home/alex/b.txt", found)
+        self.assertIn("/home/user/a.txt", found)
+        self.assertIn("/home/user/b.txt", found)
 
     def test_collects_cwd(self):
-        self.proc.process(101, cwd="/home/alex/project")
-        self.assertIn("/home/alex/project", scanner.scan_open_paths(self.proc.root))
+        self.proc.process(101, cwd="/home/user/project")
+        self.assertIn("/home/user/project", scanner.scan_open_paths(self.proc.root))
 
     def test_ignores_non_numeric_entries(self):
         (self.proc.root / "self").mkdir()
         (self.proc.root / "meminfo").write_text("junk")
-        self.proc.process(101, fds=["/home/alex/a.txt"])
-        self.assertEqual(scanner.scan_open_paths(self.proc.root), {"/home/alex/a.txt"})
+        self.proc.process(101, fds=["/home/user/a.txt"])
+        self.assertEqual(scanner.scan_open_paths(self.proc.root), {"/home/user/a.txt"})
 
     def test_ignores_pipes_and_sockets(self):
-        self.proc.process(101, fds=["pipe:[12345]", "socket:[678]", "/home/alex/a.txt"])
-        self.assertEqual(scanner.scan_open_paths(self.proc.root), {"/home/alex/a.txt"})
+        self.proc.process(101, fds=["pipe:[12345]", "socket:[678]", "/home/user/a.txt"])
+        self.assertEqual(scanner.scan_open_paths(self.proc.root), {"/home/user/a.txt"})
 
     def test_ignores_anonymous_inodes(self):
         self.proc.process(101, fds=["anon_inode:[eventpoll]", "/dev/null"])
@@ -59,11 +59,11 @@ class ScanOpenPathsTest(unittest.TestCase):
         self.assertNotIn("anon_inode:[eventpoll]", found)
 
     def test_unreadable_process_is_skipped(self):
-        proc = self.proc.process(101, fds=["/home/alex/a.txt"])
-        self.proc.process(102, fds=["/home/alex/b.txt"])
+        proc = self.proc.process(101, fds=["/home/user/a.txt"])
+        self.proc.process(102, fds=["/home/user/b.txt"])
         os.chmod(proc / "fd", 0o000)
         try:
-            self.assertIn("/home/alex/b.txt", scanner.scan_open_paths(self.proc.root))
+            self.assertIn("/home/user/b.txt", scanner.scan_open_paths(self.proc.root))
         finally:
             os.chmod(proc / "fd", 0o755)
 
@@ -73,28 +73,28 @@ class ScanOpenPathsTest(unittest.TestCase):
 
 class ActiveNamesTest(unittest.TestCase):
     def test_file_matches_exactly(self):
-        items = {"a.txt": Item("a.txt", "/home/alex/a.txt", 0.0, 0.0, is_dir=False)}
-        self.assertEqual(scanner.active_names(items, {"/home/alex/a.txt"}), {"a.txt"})
+        items = {"a.txt": Item("a.txt", "/home/user/a.txt", 0.0, 0.0, is_dir=False)}
+        self.assertEqual(scanner.active_names(items, {"/home/user/a.txt"}), {"a.txt"})
 
     def test_file_does_not_match_by_prefix(self):
-        items = {"a.txt": Item("a.txt", "/home/alex/a.txt", 0.0, 0.0, is_dir=False)}
-        self.assertEqual(scanner.active_names(items, {"/home/alex/a.txt.bak"}), set())
+        items = {"a.txt": Item("a.txt", "/home/user/a.txt", 0.0, 0.0, is_dir=False)}
+        self.assertEqual(scanner.active_names(items, {"/home/user/a.txt.bak"}), set())
 
     def test_directory_matches_contents(self):
-        items = {"project": Item("project", "/home/alex/project", 0.0, 0.0, is_dir=True)}
-        found = scanner.active_names(items, {"/home/alex/project/deep/file.mp4"})
+        items = {"project": Item("project", "/home/user/project", 0.0, 0.0, is_dir=True)}
+        found = scanner.active_names(items, {"/home/user/project/deep/file.mp4"})
         self.assertEqual(found, {"project"})
 
     def test_directory_matches_itself(self):
-        items = {"project": Item("project", "/home/alex/project", 0.0, 0.0, is_dir=True)}
-        self.assertEqual(scanner.active_names(items, {"/home/alex/project"}), {"project"})
+        items = {"project": Item("project", "/home/user/project", 0.0, 0.0, is_dir=True)}
+        self.assertEqual(scanner.active_names(items, {"/home/user/project"}), {"project"})
 
     def test_directory_does_not_match_a_sibling_with_shared_prefix(self):
-        items = {"project": Item("project", "/home/alex/project", 0.0, 0.0, is_dir=True)}
-        self.assertEqual(scanner.active_names(items, {"/home/alex/project-old/x"}), set())
+        items = {"project": Item("project", "/home/user/project", 0.0, 0.0, is_dir=True)}
+        self.assertEqual(scanner.active_names(items, {"/home/user/project-old/x"}), set())
 
     def test_nothing_open_yields_nothing(self):
-        items = {"a.txt": Item("a.txt", "/home/alex/a.txt", 0.0, 0.0, is_dir=False)}
+        items = {"a.txt": Item("a.txt", "/home/user/a.txt", 0.0, 0.0, is_dir=False)}
         self.assertEqual(scanner.active_names(items, set()), set())
 
 

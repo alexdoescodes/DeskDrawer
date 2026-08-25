@@ -25,8 +25,20 @@ Activity is detected two ways, because one is not enough:
 Deadlines are absolute timestamps, so time spent logged out needs no special
 handling; the daemon sweeps once at startup and everything lands correctly.
 
+## Requirements
+
+- KDE Plasma 6.0 or newer (developed against 6.7) on a systemd-based Linux
+- Qt 6
+- Python 3.11 or newer
+
+No pip packages and no system packages are required. inotify is called through
+`ctypes` and the tests use stdlib `unittest`, so nothing is installed beyond
+what a Plasma desktop already ships.
+
 ## Install
 
+    git clone https://github.com/alexdoescodes/DeskDrawer.git
+    cd DeskDrawer
     ./install.sh
 
 This copies the daemon to `~/.local/share/deskdrawer-daemon`, installs the
@@ -34,8 +46,19 @@ This copies the daemon to `~/.local/share/deskdrawer-daemon`, installs the
 service, and installs the widget. Add it with right-click desktop -> Add Widgets
 -> DeskDrawer.
 
-No pip packages and no system packages are required. inotify is called through
-`ctypes`; tests use stdlib `unittest`.
+Everything lands under `$HOME`; nothing is written system-wide and no step
+needs root.
+
+## Uninstall
+
+    systemctl --user disable --now deskdrawer.service
+    rm -rf ~/.local/share/deskdrawer-daemon ~/.local/bin/deskdrawer
+    rm -f ~/.config/systemd/user/deskdrawer.service ~/.config/deskdrawerrc
+    kpackagetool6 --type Plasma/Applet --remove org.kde.plasma.deskdrawer
+
+Your drawer's symlinks in `~/.local/share/deskdrawer/` are left alone. Delete
+that directory too if you want them gone - it holds only links, never
+originals.
 
 ## Using it
 
@@ -108,3 +131,13 @@ input instead, with the widget running under XWayland:
     QT_QPA_PLATFORM=xcb plasmoidviewer -a org.kde.plasma.deskdrawer &
     python3 plasmoid/contents/tests/manual-input.py double <x> <y>
     python3 plasmoid/contents/tests/manual-input.py single <x> <y> Control_L
+
+## Design
+
+`docs/design.md` covers why the daemon and the widget share a directory instead
+of talking to each other, and why activity detection needs both `/proc` and
+inotify.
+
+## License
+
+MIT - see `LICENSE`.

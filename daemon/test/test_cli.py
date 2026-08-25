@@ -11,21 +11,21 @@ from deskdrawer.store import Store
 
 class PathFromArgumentTest(unittest.TestCase):
     def test_plain_path(self):
-        self.assertEqual(cli.path_from_argument("/home/alex/a.txt"), Path("/home/alex/a.txt"))
+        self.assertEqual(cli.path_from_argument("/home/user/a.txt"), Path("/home/user/a.txt"))
 
     def test_file_url(self):
-        self.assertEqual(cli.path_from_argument("file:///home/alex/a.txt"), Path("/home/alex/a.txt"))
+        self.assertEqual(cli.path_from_argument("file:///home/user/a.txt"), Path("/home/user/a.txt"))
 
     def test_percent_encoded_url(self):
         self.assertEqual(
-            cli.path_from_argument("file:///home/alex/my%20report.pdf"),
-            Path("/home/alex/my report.pdf"),
+            cli.path_from_argument("file:///home/user/my%20report.pdf"),
+            Path("/home/user/my report.pdf"),
         )
 
     def test_url_with_hash_and_spaces(self):
         self.assertEqual(
-            cli.path_from_argument("file:///home/alex/a%23b%20c.txt"),
-            Path("/home/alex/a#b c.txt"),
+            cli.path_from_argument("file:///home/user/a%23b%20c.txt"),
+            Path("/home/user/a#b c.txt"),
         )
 
 

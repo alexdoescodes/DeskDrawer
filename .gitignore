@@ -1,2 +1,19 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# Agent / planning scratch
+.superpowers/
+
+# Test and build output
+*.log
+*.png
+out.txt

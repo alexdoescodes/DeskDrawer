@@ -7,7 +7,7 @@
     "Category": "Utilities",
     "License": "MIT",
     "Version": "1.0.0",
-    "Authors": [{ "Name": "Alex" }]
+    "Authors": [{ "Name": "alexdoescodes" }]
   },
   "KPackageStructure": "Plasma/Applet",
   "X-Plasma-API-Minimum-Version": "6.0"
